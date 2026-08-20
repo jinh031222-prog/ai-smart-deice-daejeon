@@ -24,6 +24,10 @@ from modules.risk_engine import (
 # 배포 서버의 시스템 시간대와 관계없이 한국 표준시를 사용한다.
 KST = timezone(timedelta(hours=9))
 
+# 기상 데이터 처리 방식이 바뀌었을 때 이전 배포 캐시를 재사용하지
+# 않도록 명시적인 버전을 캐시 키에 포함한다.
+WEATHER_CACHE_VERSION = "kst_v2"
+
 
 # =========================================================
 # PAGE
@@ -397,8 +401,13 @@ hr {
 # CACHE
 # =========================================================
 
-@st.cache_data(ttl=600, show_spinner=False)
-def load_weather_data(nx: int, ny: int) -> dict:
+@st.cache_data(ttl=300, show_spinner=False)
+def load_weather_data(
+    nx: int,
+    ny: int,
+    cache_version: str,
+) -> dict:
+    # cache_version은 배포 후 이전 기상 캐시를 확실히 분리하기 위한 키다.
     return build_weather_data(nx, ny)
 
 
@@ -617,6 +626,18 @@ def show_weather_cards(weather: dict):
         '<div class="section-title">☁ 현재 기상</div>',
         unsafe_allow_html=True,
     )
+
+    base_date = str(weather.get("base_date", ""))
+    base_time = str(weather.get("base_time", ""))
+
+    if len(base_date) == 8 and len(base_time) == 4:
+        observed_at = (
+            f"{base_date[:4]}.{base_date[4:6]}.{base_date[6:8]} "
+            f"{base_time[:2]}:{base_time[2:]}"
+        )
+        st.caption(
+            f"기상청 초단기실황 · 관측 기준 {observed_at} KST"
+        )
 
     c1, c2, c3, c4 = st.columns(4)
 
@@ -934,6 +955,7 @@ try:
             weather = load_weather_data(
                 nx,
                 ny,
+                WEATHER_CACHE_VERSION,
             )
 
 except Exception as error:
