@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 import geopandas as gpd
 import streamlit as st
@@ -19,6 +19,10 @@ from modules.risk_engine import (
     estimate_surface_temperature,
     estimate_dew_point,
 )
+
+
+# 배포 서버의 시스템 시간대와 관계없이 한국 표준시를 사용한다.
+KST = timezone(timedelta(hours=9))
 
 
 # =========================================================
@@ -775,7 +779,7 @@ with st.sidebar:
 
     st.markdown("### 🕒 분석 기준 시간")
 
-    current_time = datetime.now()
+    current_time = datetime.now(KST)
     default_analysis_time = (
         f"{current_time.hour:02d}:"
         f"{'30' if current_time.minute >= 30 else '00'}"
@@ -810,7 +814,7 @@ with st.sidebar:
 # HERO
 # =========================================================
 
-analysis_time = datetime.now().strftime(
+analysis_time = datetime.now(KST).strftime(
     "%Y.%m.%d %H:%M"
 )
 
