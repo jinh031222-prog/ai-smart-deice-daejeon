@@ -1,0 +1,23 @@
+# API keys and Streamlit secrets
+.env
+.streamlit/secrets.toml
+
+# Python and Streamlit caches
+__pycache__/
+*.py[cod]
+.streamlit/cache/
+cache/
+
+# Local development files
+.venv/
+venv/
+.vscode/
+.idea/
+.pytest_cache/
+.DS_Store
+Thumbs.db
+
+# Temporary exports and local cleanup folders
+*.zip
+project_inventory.csv
+BLACKICE_CLEANUP_HOLD_*/
